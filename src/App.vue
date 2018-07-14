@@ -3,6 +3,16 @@
     <FlockBanner v-if="bannerMsg.length">
       {{ bannerMsg }}
     </FlockBanner>
+    <div class="control">
+      <Input
+        :icon="Search"
+        v-model="search"
+        :suggestions="suggestions"
+        placeholder="Search"
+        @input="getSuggestions"
+        @selected="chooseSuggestion"
+      />
+    </div>
     <l-map :zoom="zoom" :center="center" :options="options">
       <l-tile-layer :url="url"></l-tile-layer>
       <l-marker :lat-lng="location"></l-marker>
@@ -12,8 +22,8 @@
         :bounds="option.bounds"
         :color="option.color"
         :fillColor="option.color"
-        :weight="1"
         :fillOpacity="0.3"
+        :weight="1"
       ></l-rectangle>
     </l-map>
   </div>
@@ -24,9 +34,13 @@ import { LMap, LTileLayer, LMarker, LRectangle } from 'vue2-leaflet';
 import Components from '@flockos/vue-components';
 import debounce from 'lodash.debounce';
 import Geohash from 'latlon-geohash';
+import MapboxClient from 'mapbox';
+import Search from './assets/search.svg';
+import Input from './components/Input.vue';
 import dummyData from './utils/data';
 
 const { L } = window;
+const client = new MapboxClient(process.env.VUE_APP_MAPBOX_KEY);
 const colors = ['#D0021B', '#D02C02', '#D05D02', '#E49D14', '#E6BB01', '#EFE401', '#B3E202', '#69E202', '#00ECA4'];
 
 export default {
@@ -36,12 +50,16 @@ export default {
     LMarker,
     LRectangle,
     LTileLayer,
+    Input,
     ...Components,
   },
   data() {
     return {
       bannerMsg: '',
       map: null,
+      search: '',
+      Search,
+      suggestions: [],
       options: {
         zoomControl: false,
         attributionControl: false,
@@ -72,14 +90,35 @@ export default {
       .catch(this.populateOldHeatMap);
   },
   methods: {
+    chooseSuggestion(place) {
+      this.suggestions = [];
+      if (place.center) {
+        const [longitude, latitude] = place.center;
+        this.center = L.latLng(latitude, longitude);
+        this.zoom = 16;
+      }
+      // We just need to center the map on this particular location.
+    },
+    getSuggestions(query) {
+      client.geocodeForward(query, (err, data) => {
+        if (data) {
+          this.showSuggestions(data.features);
+        } else {
+          this.suggestions = [];
+        }
+      });
+    },
+    showSuggestions(results) {
+      this.suggestions = results;
+    },
     getBounds(geohash) {
-      // Killer jugaad
+      // Killer jugaad, replace first five digits with Bangalore's digits
       const newGeohash = geohash.replace(/^[0-9a-zA-Z]{5}/, 'tdr1t');
       const { sw, ne } = Geohash.bounds(newGeohash);
       return [[sw.lat, sw.lon], [ne.lat, ne.lon]];
     },
     getColor(weight) {
-      return colors[parseInt(10 * weight)];
+      return colors[parseInt(10 * weight, 10)];
     },
     populateHeatMap(data) {
       this.rectangles = data.map(({ geohash, weight }) => {
@@ -117,6 +156,13 @@ export default {
 <style lang="scss">
 body {
   margin: 0;
+}
+.control {
+  position: fixed;
+  z-index: 401;
+  top: 1em;
+  left: 1em;
+  right: 1em;
 }
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
