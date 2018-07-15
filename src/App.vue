@@ -7,10 +7,16 @@
       <Input
         :icon="Search"
         v-model="search"
+        style="width: 60%"
         :suggestions="suggestions"
         placeholder="Search"
         @input="getSuggestions"
         @selected="chooseSuggestion"
+      />
+      <Select
+        style="width: 36%; margin-left: 4%"
+        :options="timeSlots"
+        v-model="chosenTime"
       />
     </div>
     <l-map :zoom="zoom" :center="center" :options="options">
@@ -37,11 +43,38 @@ import Geohash from 'latlon-geohash';
 import MapboxClient from 'mapbox';
 import Search from './assets/search.svg';
 import Input from './components/Input.vue';
+import Select from './components/Select.vue';
 import dummyData from './utils/data';
 
 const { L } = window;
+const amOrPm = (slot) => {
+  let newSlot = slot % 12;
+  if (newSlot === 0) {
+    return 'AM';
+  }
+  return slot < 12 ? 'AM' : 'PM';
+};
+const getHour = (slot) => {
+  if (slot <= 12) {
+    if (slot === 0) {
+      return 12;
+    }
+    return slot;
+  } else {
+    return (slot % 12) || 12;
+  }
+};
 const client = new MapboxClient(process.env.VUE_APP_MAPBOX_KEY);
 const colors = ['#D0021B', '#D02C02', '#D05D02', '#E49D14', '#E6BB01', '#EFE401', '#B3E202', '#69E202', '#00ECA4'];
+// eslint-disable-next-line
+const timeSlots = Array.apply(null, { length: 24 })
+  .map(Number.call, Number)
+  .map((slot) => {
+    return {
+      text: `${getHour(slot)} ${amOrPm(slot)} - ${getHour(slot + 1)} ${amOrPm(slot + 1)}`,
+    };
+  });
+const date = new Date();
 
 export default {
   name: 'app',
@@ -50,14 +83,17 @@ export default {
     LMarker,
     LRectangle,
     LTileLayer,
-    Input,
     ...Components,
+    Input,
+    Select,
   },
   data() {
     return {
       bannerMsg: '',
+      chosenTime: timeSlots[date.getHours() + 1],
       map: null,
       search: '',
+      timeSlots,
       Search,
       suggestions: [],
       options: {
@@ -100,13 +136,22 @@ export default {
       // We just need to center the map on this particular location.
     },
     getSuggestions(query) {
-      client.geocodeForward(query, (err, data) => {
-        if (data) {
-          this.showSuggestions(data.features);
-        } else {
-          this.suggestions = [];
-        }
-      });
+      if (query) {
+        client.geocodeForward(query, {
+          proximity: {
+            latitude: this.location.lat,
+            longitude: this.location.lng,
+          },
+        }, (err, data) => {
+          if (data) {
+            this.showSuggestions(data.features);
+          } else {
+            this.suggestions = [];
+          }
+        });
+      } else {
+        this.suggestions = [];
+      }
     },
     showSuggestions(results) {
       this.suggestions = results;

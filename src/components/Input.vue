@@ -4,22 +4,22 @@
     <div class="icon" v-if="icon">
       <img :src="icon" />
     </div>
-    <ul v-if="suggestions.length" class="list">
-      <li
-        v-for="(item, index) in suggestions"
-        :key="index"
-        @click="select(item)"
-      >
-        {{ item.text }}
-      </li>
-    </ul>
+    <SuggestionList
+      @selected="onSelect"
+      :suggestions="suggestions"
+    />
   </div>
 </template>
 <script>
+import SuggestionList from './SuggestionList.vue';
+
 export default {
   model: {
     prop: 'value',
     event: 'input',
+  },
+  components: {
+    SuggestionList,
   },
   props: {
     value: String,
@@ -41,7 +41,7 @@ export default {
     update(event) {
       this.$emit('input', event.target.value);
     },
-    select(item) {
+    onSelect(item) {
       this.proxy = item.text;
       this.$emit('selected', item);
     },
@@ -49,14 +49,6 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-@mixin box() {
-  font-size: 1em;
-  padding: 12px;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-  border-radius: 4px;
-  box-sizing: border-box;
-  background: white;
-}
 .input-container {
   position: relative;
   display: inline-block;
@@ -69,27 +61,11 @@ export default {
     transform: translate(-50%, -50%);
   }
 }
-.list {
-  @include box();
-  position: absolute;
-  top: 3.5em;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  left: 0;
-  right: 0;
-  li {
-    padding: 12px;
-    cursor: pointer;
-    &:hover {
-      background: #f9f9f9;
-    }
-  }
-}
 .has-icon input {
   padding-left: 2.25em;
 }
 input {
+  width: 100%;
   @include box();
   border: none;
   &:focus {
