@@ -146,7 +146,7 @@ export default {
       if (place.center) {
         const [longitude, latitude] = place.center;
         this.center = L.latLng(latitude, longitude);
-        this.zoom = 16;
+        this.$refs.map.mapObject.setZoom(16);
       }
       // We just need to center the map on this particular location.
     },
