@@ -15,6 +15,7 @@
       />
       <Select
         style="width: 36%; margin-left: 4%"
+        @selected="populateHeatMap"
         :options="timeSlots"
         v-model="chosenTime"
       />
@@ -95,6 +96,7 @@ export default {
       chosenTime: timeSlots[(date.getHours() + 1) % 24],
       map: null,
       search: '',
+      data: null,
       timeSlots,
       suggestions: [],
       options: {
@@ -123,7 +125,10 @@ export default {
       options,
     );
     this.$http.get('hot-zone.json')
-      .then(this.populateHeatMap);
+      .then(({ data }) => {
+        this.data = data;
+        this.populateHeatMap(this.chosenTime);
+      });
   },
   methods: {
     bringToCenter() {
@@ -163,15 +168,17 @@ export default {
     },
     getBounds(geohash) {
       // Killer jugaad, replace first five digits with Bangalore's digits
-      const newGeohash = geohash.replace(/^[0-9a-zA-Z]{5}/, 'tdr1t');
+      const newGeohash = geohash.replace(/^[0-9a-zA-Z]{4}/, 'tdr1');
       const { sw, ne } = Geohash.bounds(newGeohash);
       return [[sw.lat, sw.lon], [ne.lat, ne.lon]];
     },
     getColor(weight) {
       return colors[parseInt(10 * weight, 10)];
     },
-    populateHeatMap({ data }) {
-      this.rectangles = data[timeSlots.indexOf(this.chosenTime)].map(({ geohash, weight }) => {
+    populateHeatMap(chosenTime) {
+      this.rectangles = this.data[timeSlots.findIndex((slot) => {
+        return slot.text === chosenTime.text;
+      })].map(({ geohash, weight }) => {
         const bounds = this.getBounds(geohash);
         const color = this.getColor(weight);
         return {
