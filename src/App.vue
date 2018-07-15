@@ -47,7 +47,7 @@ import Search from './assets/search.svg';
 import Locate from './assets/locate.svg';
 import Input from './components/Input.vue';
 import Select from './components/Select.vue';
-import dummyData from './utils/data';
+
 
 const { L } = window;
 const amOrPm = (slot) => {
@@ -67,7 +67,7 @@ const getHour = (slot) => {
   return (slot % 12) || 12;
 };
 const client = new MapboxClient(process.env.VUE_APP_MAPBOX_KEY);
-const colors = ['#D0021B', '#D02C02', '#D05D02', '#E49D14', '#E6BB01', '#EFE401', '#B3E202', '#69E202', '#00ECA4'];
+const colors = ['#D0021B', '#D02C02', '#D05D02', '#E49D14', '#E6BB01', '#EFE401', '#B3E202', '#69E202', '#00ECA4', '#02CEE2'].reverse();
 // eslint-disable-next-line
 const timeSlots = Array.apply(null, { length: 24 })
   .map(Number.call, Number)
@@ -92,7 +92,7 @@ export default {
       Search,
       Locate,
       bannerMsg: '',
-      chosenTime: timeSlots[date.getHours() + 1],
+      chosenTime: timeSlots[(date.getHours() + 1) % 24],
       map: null,
       search: '',
       timeSlots,
@@ -122,9 +122,8 @@ export default {
       this.updateLocationFailed,
       options,
     );
-    this.$http.get('')
-      .then(this.populateHeatMap)
-      .catch(this.populateOldHeatMap);
+    this.$http.get('hot-zone.json')
+      .then(this.populateHeatMap);
   },
   methods: {
     bringToCenter() {
@@ -171,8 +170,8 @@ export default {
     getColor(weight) {
       return colors[parseInt(10 * weight, 10)];
     },
-    populateHeatMap(data) {
-      this.rectangles = data.map(({ geohash, weight }) => {
+    populateHeatMap({ data }) {
+      this.rectangles = data[timeSlots.indexOf(this.chosenTime)].map(({ geohash, weight }) => {
         const bounds = this.getBounds(geohash);
         const color = this.getColor(weight);
         return {
@@ -180,10 +179,8 @@ export default {
           color,
         };
       });
-    },
-    populateOldHeatMap() {
-      console.log('Could not populate heat map!');
-      this.populateHeatMap(dummyData);
+      // eslint-ignore-next-line
+      console.log(this.rectangles);
     },
     getLatLng({ latitude, longitude }) {
       return L.latLng(latitude, longitude);
