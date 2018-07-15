@@ -176,16 +176,15 @@ export default {
       return colors[parseInt(10 * weight, 10)];
     },
     populateHeatMap(chosenTime) {
-      this.rectangles = this.data[timeSlots.findIndex((slot) => {
-        return slot.text === chosenTime.text;
-      })].map(({ geohash, weight }) => {
-        const bounds = this.getBounds(geohash);
-        const color = this.getColor(weight);
-        return {
-          bounds,
-          color,
-        };
-      });
+      this.rectangles = this.data[timeSlots.findIndex(slot => slot.text === chosenTime.text)]
+        .map(({ geohash, weight }) => {
+          const bounds = this.getBounds(geohash);
+          const color = this.getColor(weight);
+          return {
+            bounds,
+            color,
+          };
+        });
       // eslint-ignore-next-line
       console.log(this.rectangles);
     },
