@@ -7,14 +7,14 @@
       <Input
         :icon="Search"
         v-model="search"
-        style="width: 60%"
+        style="width: 52%"
         :suggestions="suggestions"
         placeholder="Search"
         @input="getSuggestions"
         @selected="chooseSuggestion"
       />
       <Select
-        style="width: 36%; margin-left: 4%"
+        style="width: 46%; margin-left: 2%"
         @selected="populateHeatMap"
         :options="timeSlots"
         v-model="chosenTime"
@@ -222,6 +222,9 @@ body {
   top: 1em;
   left: 1em;
   right: 1em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .current-location {
   position: fixed;

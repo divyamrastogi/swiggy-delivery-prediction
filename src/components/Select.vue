@@ -48,9 +48,6 @@ export default {
 </script>
 <style lang="scss" scoped>
 .select {
-  max-width: 80%;
-  text-overflow: ellipsis;
-  overflow: hidden;
   @include box();
   cursor: pointer;
   padding-right: 2em;
@@ -59,6 +56,8 @@ export default {
   white-space: nowrap;
   .selected {
     line-height: 18px;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
   &.open .caret {
     transform: translateY(-50%) rotateX(180deg);

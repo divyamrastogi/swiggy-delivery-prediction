@@ -80,6 +80,7 @@ export default {
 }
 .has-icon input {
   padding-left: 2.25em;
+  padding-right: 2.25em;
 }
 input {
   width: 100%;
