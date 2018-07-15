@@ -22,7 +22,7 @@
     </div>
     <l-map ref="map" :zoom="zoom" :center="center" :options="options">
       <l-tile-layer :url="url"></l-tile-layer>
-      <l-marker :lat-lng="location"></l-marker>
+      <l-marker :icon="executiveIcon" :lat-lng="location"></l-marker>
       <l-rectangle
         :key="index"
         v-for="(option, index) in rectangles"
@@ -46,6 +46,7 @@ import Geohash from 'latlon-geohash';
 import MapboxClient from 'mapbox';
 import Search from './assets/search.svg';
 import Locate from './assets/locate.svg';
+import ExecutiveIcon from './assets/rider.svg';
 import Input from './components/Input.vue';
 import Select from './components/Select.vue';
 
@@ -98,6 +99,9 @@ export default {
       search: '',
       data: null,
       timeSlots,
+      executiveIcon: L.icon({
+        iconUrl: ExecutiveIcon,
+      }),
       suggestions: [],
       options: {
         zoomControl: false,
@@ -132,8 +136,9 @@ export default {
   },
   methods: {
     bringToCenter() {
-      this.zoom = 16;
-      this.$refs.map.mapObject.panTo(this.location);
+      this.$refs.map.mapObject
+        .panTo(this.location)
+        .setZoom(16);
       // this.center = L.latLng(this.location);
     },
     chooseSuggestion(place) {
@@ -176,17 +181,17 @@ export default {
       return colors[parseInt(10 * weight, 10)];
     },
     populateHeatMap(chosenTime) {
-      this.rectangles = this.data[timeSlots.findIndex(slot => slot.text === chosenTime.text)]
-        .map(({ geohash, weight }) => {
-          const bounds = this.getBounds(geohash);
-          const color = this.getColor(weight);
-          return {
-            bounds,
-            color,
-          };
-        });
-      // eslint-ignore-next-line
-      console.log(this.rectangles);
+      if (this.data) {
+        this.rectangles = this.data[timeSlots.findIndex(slot => slot.text === chosenTime.text)]
+          .map(({ geohash, weight }) => {
+            const bounds = this.getBounds(geohash);
+            const color = this.getColor(weight);
+            return {
+              bounds,
+              color,
+            };
+          });
+      }
     },
     getLatLng({ latitude, longitude }) {
       return L.latLng(latitude, longitude);
