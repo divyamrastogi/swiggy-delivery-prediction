@@ -5,6 +5,7 @@
       <img :src="icon" />
     </div>
     <SuggestionList
+      v-if="proxy"
       @selected="onSelect"
       :suggestions="suggestions"
     />

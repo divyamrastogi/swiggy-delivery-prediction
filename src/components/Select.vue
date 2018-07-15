@@ -53,6 +53,7 @@ export default {
   padding-right: 2em;
   position: relative;
   display: inline-block;
+  white-space: nowrap;
   .selected {
     line-height: 18px;
   }
