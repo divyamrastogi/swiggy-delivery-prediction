@@ -83,6 +83,8 @@ export default {
 }
 input {
   width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   @include box();
   border: none;
   &:focus {

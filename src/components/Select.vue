@@ -48,6 +48,9 @@ export default {
 </script>
 <style lang="scss" scoped>
 .select {
+  max-width: 80%;
+  text-overflow: ellipsis;
+  overflow: hidden;
   @include box();
   cursor: pointer;
   padding-right: 2em;
