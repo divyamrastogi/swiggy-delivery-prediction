@@ -48,7 +48,7 @@ import dummyData from './utils/data';
 
 const { L } = window;
 const amOrPm = (slot) => {
-  let newSlot = slot % 12;
+  const newSlot = slot % 12;
   if (newSlot === 0) {
     return 'AM';
   }
@@ -60,20 +60,17 @@ const getHour = (slot) => {
       return 12;
     }
     return slot;
-  } else {
-    return (slot % 12) || 12;
   }
+  return (slot % 12) || 12;
 };
 const client = new MapboxClient(process.env.VUE_APP_MAPBOX_KEY);
 const colors = ['#D0021B', '#D02C02', '#D05D02', '#E49D14', '#E6BB01', '#EFE401', '#B3E202', '#69E202', '#00ECA4'];
 // eslint-disable-next-line
 const timeSlots = Array.apply(null, { length: 24 })
   .map(Number.call, Number)
-  .map((slot) => {
-    return {
-      text: `${getHour(slot)} ${amOrPm(slot)} - ${getHour(slot + 1)} ${amOrPm(slot + 1)}`,
-    };
-  });
+  .map(slot => ({
+    text: `${getHour(slot)} ${amOrPm(slot)} - ${getHour(slot + 1)} ${amOrPm(slot + 1)}`,
+  }));
 const date = new Date();
 
 export default {
