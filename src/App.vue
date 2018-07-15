@@ -19,7 +19,7 @@
         v-model="chosenTime"
       />
     </div>
-    <l-map :zoom="zoom" :center="center" :options="options">
+    <l-map ref="map" :zoom="zoom" :center="center" :options="options">
       <l-tile-layer :url="url"></l-tile-layer>
       <l-marker :lat-lng="location"></l-marker>
       <l-rectangle
@@ -32,16 +32,19 @@
         :weight="1"
       ></l-rectangle>
     </l-map>
+    <div class="current-location" @click="bringToCenter">
+      <img :src="Locate" alt="">
+    </div>
   </div>
 </template>
 
 <script>
 import { LMap, LTileLayer, LMarker, LRectangle } from 'vue2-leaflet';
 import Components from '@flockos/vue-components';
-import debounce from 'lodash.debounce';
 import Geohash from 'latlon-geohash';
 import MapboxClient from 'mapbox';
 import Search from './assets/search.svg';
+import Locate from './assets/locate.svg';
 import Input from './components/Input.vue';
 import Select from './components/Select.vue';
 import dummyData from './utils/data';
@@ -86,12 +89,13 @@ export default {
   },
   data() {
     return {
+      Search,
+      Locate,
       bannerMsg: '',
       chosenTime: timeSlots[date.getHours() + 1],
       map: null,
       search: '',
       timeSlots,
-      Search,
       suggestions: [],
       options: {
         zoomControl: false,
@@ -114,7 +118,7 @@ export default {
       options,
     );
     navigator.geolocation.watchPosition(
-      debounce(this.updateLocation, 1000),
+      this.updateLocation,
       this.updateLocationFailed,
       options,
     );
@@ -123,6 +127,11 @@ export default {
       .catch(this.populateOldHeatMap);
   },
   methods: {
+    bringToCenter() {
+      this.zoom = 16;
+      this.$refs.map.mapObject.panTo(this.location);
+      // this.center = L.latLng(this.location);
+    },
     chooseSuggestion(place) {
       this.suggestions = [];
       if (place.center) {
@@ -205,6 +214,19 @@ body {
   top: 1em;
   left: 1em;
   right: 1em;
+}
+.current-location {
+  position: fixed;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  width: 2em;
+  height: 2em;
+  z-index: 401;
+  bottom: 1em;
+  right: 1em;
+  @include box();
+  padding: 0;
 }
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
