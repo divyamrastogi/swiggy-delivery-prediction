@@ -8,9 +8,11 @@
       @selected="onSelect"
       :suggestions="suggestions"
     />
+    <img @click="clearContent" :src="Clear" class="clear" v-if="proxy.length" />
   </div>
 </template>
 <script>
+import Clear from '@/assets/clear.svg';
 import SuggestionList from './SuggestionList.vue';
 
 export default {
@@ -34,6 +36,7 @@ export default {
   },
   data() {
     return {
+      Clear,
       proxy: this.value,
     };
   },
@@ -44,6 +47,10 @@ export default {
     onSelect(item) {
       this.proxy = item.text;
       this.$emit('selected', item);
+    },
+    clearContent() {
+      this.proxy = '';
+      this.$emit('input', this.proxy);
     },
   },
 };
@@ -59,6 +66,15 @@ export default {
     top: 50%;
     position: absolute;
     transform: translate(-50%, -50%);
+  }
+  .clear {
+    top: 50%;
+    right: 1em;
+    width: 1em;
+    height: 1em;
+    cursor: pointer;
+    position: absolute;
+    transform: translateY(-50%);
   }
 }
 .has-icon input {
